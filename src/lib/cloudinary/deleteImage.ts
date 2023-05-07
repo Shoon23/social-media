@@ -1,0 +1,16 @@
+import { v2 as cloudinary } from "cloudinary";
+
+cloudinary.config({
+  cloud_name: process.env.NEXT_PUBLIC_CLOUDINARY_CLOUD_NAME,
+  api_key: process.env.NEXT_CLOUDINARY_API_KEY,
+  api_secret: process.env.NEXT_CLOUDINARY_API_SECRET,
+});
+
+export default async function deleteImage(publicId: string) {
+  try {
+    const res = await cloudinary.uploader.destroy(`socialMedia/${publicId}`);
+    console.log(res);
+  } catch (error) {
+    console.log(error);
+  }
+}
