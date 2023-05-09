@@ -23,7 +23,7 @@ const PostCard = ({ post: postProp, userId }: Props) => {
   const session = useSession();
   const user = session.data?.user as iMySession;
   const [isLiked, setIsLiked] = useState<boolean>();
-  const [totalLikes, setTotalLikes] = useState<number>(0);
+  const [totalLikes, setTotalLikes] = useState<number>(postProp.totalLikes);
   const [post, setPost] = useState<any>({});
 
   useEffect(() => {
@@ -47,12 +47,13 @@ const PostCard = ({ post: postProp, userId }: Props) => {
         }),
       });
 
-      if (isLiked) {
-        setIsLiked(false);
-        setTotalLikes((prev) => prev - 1);
-      } else {
-        setIsLiked(true);
-        setTotalLikes((prev) => prev + 1);
+      if (res.ok) {
+        if (isLiked) {
+          setTotalLikes((prev) => prev - 1);
+        } else {
+          setTotalLikes((prev) => prev + 1);
+        }
+        setIsLiked((prev) => !prev);
       }
     } catch (error) {}
   };

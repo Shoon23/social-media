@@ -2,10 +2,10 @@ import React from "react";
 import { HomeIcon, PlusIcon, Cog8ToothIcon } from "@heroicons/react/24/solid";
 import Link from "next/link";
 import { signOut, useSession } from "next-auth/react";
-import { UserIcon } from "@heroicons/react/24/outline";
+import { UserIcon, UsersIcon } from "@heroicons/react/24/outline";
 import NewPostModal from "./Home/NewPostModal";
 import { iMySession } from "@/types";
-import UpdateModal from "./Home/UpdateCommentModal";
+
 interface Props {
   children: React.ReactElement;
 }
@@ -64,10 +64,13 @@ function HomeLayout({ children }: Props) {
               <HomeIcon className="w-8 h-8  " />
               <span>Home</span>
             </Link>
-            <li className="flex text-xl gap-2 p-2 rounded-lg hover:bg-base-200 place-items-center cursor-pointer active:scale-x-110">
-              <Cog8ToothIcon className="w-8 h-8" />
-              <span>Setting</span>
-            </li>
+            <Link
+              href={"/friends"}
+              className="flex text-xl gap-2 p-2 rounded-lg hover:bg-base-200 place-items-center cursor-pointer active:scale-x-110"
+            >
+              <UsersIcon className="w-8 h-8" />
+              <span>Friends</span>
+            </Link>
             <li className="">
               <button
                 onClick={() =>

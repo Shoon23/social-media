@@ -11,33 +11,43 @@ datasource db {
 }
 
 model User {
-  userId      String   @id @default(cuid())
+  userId      String   @id @default(uuid())
   email   String   @unique
   firstName String
   lastName String
   password String
-  friends Friend[]  @relation("userToFriends")
+  sentRequests    FriendRequest[] @relation("sender")
+  receivedRequests FriendRequest[] @relation("receiver")
   posts Post[]
   avatar String?
   comments Comment[]
   postLikes PostLike[]
   commentLikes CommentLike[]
-
+  friends Friend[]  
+  friendsOf Friend[] @relation("friendsOf")
 }
 
+
 model Friend {
-  id String @id @default(cuid())
+  id String  @id @default(uuid())
+  userId String
+  user User @relation(fields: [userId],references: [userId])
   friendId String
-  userId String 
-  user User @relation("userToFriends",fields: [userId],references: [userId])
+  friend User @relation("friendsOf", fields: [friendId],references: [userId])
   createdAt DateTime @default(now())
 }
 
-
-
+model FriendRequest {
+  id String @id @default(uuid())
+  receiverId String
+  senderId String
+  createdAt DateTime @default(now())
+  sender User @relation("sender", fields: [senderId], references: [userId])
+  receiver User @relation("receiver", fields: [receiverId], references: [userId])
+}
 
 model Post {
-  postId String @id @default(cuid())
+  postId String @id @default(uuid())
   description String
   image String?
   userId String
@@ -48,7 +58,7 @@ model Post {
 }
 
 model PostLike {
-  postLikeId String @id @default(cuid())
+  postLikeId String @id @default(uuid())
   userId String 
   user User @relation(fields: [userId],references: [userId])
   postId String
@@ -57,7 +67,7 @@ model PostLike {
 }
 
 model Comment {
-  commentId String @id @default(cuid())
+  commentId String @id @default(uuid())
   description String
   createdAt DateTime @default(now())
   postId String 
@@ -68,7 +78,7 @@ model Comment {
 }
 
 model CommentLike {
-  commentLikeId String @id @default(cuid())
+  commentLikeId String @id @default(uuid())
   userId String
   user User @relation(fields: [userId],references: [userId])
   commentId String

@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useEffect, useState } from "react";
 import PostCard from "@/components/Home/PostCard";
 import {
   ArrowPathIcon,
@@ -11,10 +11,10 @@ import { prisma } from "@/lib/prisma";
 import { iMySession, iPost, iUser } from "@/types";
 import { getServerSession } from "next-auth";
 import { authOptions } from "../api/auth/[...nextauth]";
-import { formatDistanceToNow } from "date-fns";
-import { User } from "@prisma/client";
 import { formatPosts } from "@/utils/postUtils";
 import { useRouter } from "next/router";
+import { useSession } from "next-auth/react";
+import { json } from "stream/consumers";
 
 interface Props {
   user: iUser;
@@ -29,9 +29,63 @@ const Profile: React.FC<Props> = ({
   isUser = false,
   error = false,
 }) => {
+  useEffect(() => {
+    setIsRequested(user.isRequested);
+    setIsFriend(user.isFriend);
+    setIsReceive(user.isReceive);
+  }, []);
+
   const router = useRouter();
+  const session = useSession();
+  const sessionUser = session.data?.user as iMySession;
+  const [isFriend, setIsFriend] = useState<boolean>();
+  const [isRequested, setIsRequested] = useState<boolean>();
+  const [isReceive, setIsReceive] = useState<boolean>();
+
   const handleRefresh = () => {
     router.reload();
+  };
+
+  const handleFriendRequest = async () => {
+    try {
+      const res = await fetch("/api/user/friend/request", {
+        method: "POST",
+        headers: {
+          Accept: "application/json",
+          "Content-type": "application/json",
+        },
+        body: JSON.stringify({
+          senderId: sessionUser.id,
+          receiverId: user.userId,
+        }),
+      });
+      if (res.ok) {
+        setIsRequested(true);
+      }
+    } catch (error) {
+      console.log(error);
+    }
+  };
+
+  const handleAcceptFriend = async () => {
+    try {
+      const res = await fetch("/api/user/friend/accept", {
+        method: "POST",
+        headers: {
+          Accept: "application/json",
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          userId: sessionUser.id,
+          friendId: user.userId,
+        }),
+      });
+      if (res.ok) {
+        setIsFriend(true);
+      }
+    } catch (error) {
+      console.log(error);
+    }
   };
 
   return (
@@ -41,7 +95,7 @@ const Profile: React.FC<Props> = ({
           <div className="avatar">
             <div className="w-40 rounded-full">
               {user?.avatar ? (
-                <img src={user.avatar} alt="" />
+                <img src={user.avatar} className="w-40" alt="" />
               ) : (
                 <UserIcon className="" />
               )}
@@ -52,10 +106,23 @@ const Profile: React.FC<Props> = ({
           <h1 className="text-slate-400">{user.email}</h1>
           {!isUser && (
             <>
-              <button className="btn btn-info">Add Friend</button>
-              <button className="btn btn-secondary">
-                <CheckIcon className="w-5 h-5" /> Friend
-              </button>
+              {isFriend ? (
+                <button className="btn btn-secondary">
+                  <CheckIcon className="w-5 h-5" /> Friend
+                </button>
+              ) : isRequested ? (
+                <button className="btn btn-secondary">
+                  <CheckIcon className="w-5 h-5" /> Request Sent
+                </button>
+              ) : isReceive ? (
+                <button onClick={handleAcceptFriend} className="btn btn-info">
+                  <CheckIcon className="w-5 h-5" /> Accept Friend Request
+                </button>
+              ) : (
+                <button className="btn btn-info" onClick={handleFriendRequest}>
+                  Add Friend
+                </button>
+              )}
             </>
           )}
         </div>
@@ -96,7 +163,7 @@ export const getServerSideProps: GetServerSideProps = async (context) => {
   }
 
   try {
-    const user = await prisma.user.findUnique({
+    const getUser = await prisma.user.findUnique({
       where: {
         userId,
       },
@@ -123,11 +190,43 @@ export const getServerSideProps: GetServerSideProps = async (context) => {
             },
           },
         },
+        friends: {
+          where: {
+            friendId: sessionUser.id,
+          },
+          select: {
+            id: true,
+          },
+        },
+        receivedRequests: {
+          where: {
+            senderId: sessionUser.id,
+          },
+          select: {
+            id: true,
+          },
+        },
+        sentRequests: {
+          where: {
+            receiverId: sessionUser.id,
+          },
+          select: {
+            id: true,
+          },
+        },
       },
     });
 
-    const { posts, ...userDetails } = user as any;
-
+    const { posts, friends, receivedRequests, sentRequests, ...userDetails } =
+      getUser as any;
+    console.log(userDetails);
+    const user = {
+      ...userDetails,
+      isFriend: friends?.length !== 0 && true,
+      isRequested: receivedRequests?.length !== 0 && true,
+      isReceive: sentRequests.length !== 0 && true,
+    };
+    console.log(userDetails);
     const formattedPosts = formatPosts(posts);
 
     const postsWithLikes = formattedPosts.map((post: any) => ({
@@ -141,7 +240,7 @@ export const getServerSideProps: GetServerSideProps = async (context) => {
     return {
       props: {
         isUser: sessionUser.id === userId,
-        user: userDetails,
+        user,
         posts: postsWithLikes,
       },
     };

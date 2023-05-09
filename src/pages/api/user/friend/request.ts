@@ -8,32 +8,33 @@ export default async function handler(
   req: NextApiRequest,
   res: NextApiResponse
 ) {
-  if (req.method === "GET") {
-    const userId = req.query.userId as string;
+  if (req.method === "POST") {
+    const { senderId, receiverId } = req.body;
     const session = await getServerSession(req, res, authOptions);
     const user = session?.user as iMySession;
 
-    if (!userId) {
+    if (!senderId || !receiverId) {
       return res.status(400).json({
-        message: "Missing Id",
+        message: "Missing Field",
       });
     }
 
-    if (userId !== user.id) {
+    if (user.id !== senderId) {
       return res.status(401).json({ error: "Unauthorized" });
     }
 
     try {
-      const getFriends = await prisma.friend.findMany({
-        where: {
-          userId,
+      const addFriend = await prisma.friendRequest.create({
+        data: {
+          senderId,
+          receiverId,
         },
       });
-
-      res.status(200).json(getFriends);
+      console.log(addFriend);
+      res.status(201).json(addFriend);
     } catch (error) {
       res.status(500).json({
-        message: "Something went wrong",
+        message: "Something Went Wrong",
       });
     }
   } else {

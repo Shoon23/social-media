@@ -23,8 +23,6 @@ export default async function handler(
       return res.status(401).json({ error: "Unauthorized" });
     }
 
-    console.log(description);
-
     const createPost = await prisma.post.create({
       data: {
         description,

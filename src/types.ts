@@ -8,6 +8,9 @@ export interface iUser {
   avatar: string;
   email: string;
   posts?: iPost[];
+  isFriend: boolean;
+  isRequested: boolean;
+  isReceive: boolean;
 }
 
 export interface iPost {
@@ -48,4 +51,40 @@ export interface iComment {
   userLike: [];
   isLiked: boolean;
   totalLikes: number;
+}
+
+export interface iSentRequest {
+  id: string;
+  receiverId: string;
+  senderId: string;
+  createdAt: string;
+  receiver: {
+    userId: string;
+    firstName: string;
+    lastName: string;
+    avatar: null | string;
+  };
+}
+
+export interface iReceiveRequest {
+  id: string;
+  receiverId: string;
+  senderId: string;
+  createdAt: string;
+  sender: {
+    userId: string;
+    firstName: string;
+    lastName: string;
+    avatar: null | string;
+  };
+}
+
+export interface iFriend {
+  id: string;
+  friend: {
+    userId: string;
+    firstName: string;
+    lastName: string;
+    avatar: null | null;
+  };
 }

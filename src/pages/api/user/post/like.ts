@@ -29,7 +29,7 @@ export default async function (req: NextApiRequest, res: NextApiResponse) {
           },
         });
 
-        const removeLike = await prisma.postLike.delete({
+        await prisma.postLike.delete({
           where: {
             postLikeId: userLike?.postLikeId,
           },

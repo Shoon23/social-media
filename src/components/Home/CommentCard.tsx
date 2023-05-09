@@ -24,7 +24,7 @@ const CommentCard: React.FC<Props> = ({ comment, setComments }) => {
   const session = useSession();
   const user = session.data?.user as iMySession;
   const [isLiked, setIsLiked] = useState<boolean>();
-  const [totalLikes, setTotalLikes] = useState<number>(0);
+  const [totalLikes, setTotalLikes] = useState<number>(comment.totalLikes);
 
   const handleLike = async () => {
     try {
@@ -43,12 +43,11 @@ const CommentCard: React.FC<Props> = ({ comment, setComments }) => {
 
       if (res.ok) {
         if (isLiked) {
-          setIsLiked(false);
           setTotalLikes((prev) => prev - 1);
         } else {
-          setIsLiked(true);
           setTotalLikes((prev) => prev + 1);
         }
+        setIsLiked((prev) => !prev);
       }
     } catch (error) {
       console.log(error);
