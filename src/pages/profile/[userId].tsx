@@ -5,16 +5,15 @@ import {
   CheckIcon,
   UserIcon,
 } from "@heroicons/react/24/outline";
-
 import { GetServerSideProps } from "next";
 import { prisma } from "@/lib/prisma";
 import { iMySession, iPost, iUser } from "@/types";
 import { getServerSession } from "next-auth";
 import { authOptions } from "../api/auth/[...nextauth]";
 import { formatPosts } from "@/utils/postUtils";
-import { useRouter } from "next/router";
 import { useSession } from "next-auth/react";
-import { json } from "stream/consumers";
+import ErrorPrisma from "@/components/ErrorPrisma";
+import toast from "react-hot-toast";
 
 interface Props {
   user: iUser;
@@ -35,35 +34,29 @@ const Profile: React.FC<Props> = ({
     setIsReceive(user.isReceive);
   }, []);
 
-  const router = useRouter();
   const session = useSession();
   const sessionUser = session.data?.user as iMySession;
   const [isFriend, setIsFriend] = useState<boolean>();
   const [isRequested, setIsRequested] = useState<boolean>();
   const [isReceive, setIsReceive] = useState<boolean>();
 
-  const handleRefresh = () => {
-    router.reload();
-  };
-
   const handleFriendRequest = async () => {
-    try {
-      const res = await fetch("/api/user/friend/request", {
-        method: "POST",
-        headers: {
-          Accept: "application/json",
-          "Content-type": "application/json",
-        },
-        body: JSON.stringify({
-          senderId: sessionUser.id,
-          receiverId: user.userId,
-        }),
-      });
-      if (res.ok) {
-        setIsRequested(true);
-      }
-    } catch (error) {
-      console.log(error);
+    const res = await fetch("/api/user/friend/request", {
+      method: "POST",
+      headers: {
+        Accept: "application/json",
+        "Content-type": "application/json",
+      },
+      body: JSON.stringify({
+        senderId: sessionUser.id,
+        receiverId: user.userId,
+      }),
+    });
+    if (res.ok) {
+      setIsRequested(true);
+    }
+    if (res.status == 500) {
+      toast.error("Something went wrong");
     }
   };
 
@@ -89,8 +82,8 @@ const Profile: React.FC<Props> = ({
   };
 
   return (
-    <div className="bg-base-100 h-[88vh] overflow-y-scroll">
-      <div className="flex gap-2 flex-col items-center p-20">
+    <div className="bg-base-100 h-[90vh] overflow-y-scroll">
+      <div className="flex gap-2 flex-col items-center lg:p-20">
         <div className="mb-8 flex flex-col items-center gap-2">
           <div className="avatar">
             <div className="w-40 rounded-full">
@@ -99,7 +92,6 @@ const Profile: React.FC<Props> = ({
               ) : (
                 <UserIcon className="" />
               )}
-              {/* <img src="https://media.istockphoto.com/id/1386479313/photo/happy-millennial-afro-american-business-woman-posing-isolated-on-white.jpg?s=1024x1024&w=is&k=20&c=5OK7djfD3cnNmQ-DR0iQzF-vmA-iTNN1TbuEyCG1DfA=" />{" "} */}
             </div>
           </div>
           <h1 className="text-4xl">{user.firstName + " " + user.lastName}</h1>
@@ -129,18 +121,8 @@ const Profile: React.FC<Props> = ({
         {posts.length !== 0 ? (
           posts.map((post) => <PostCard key={post.postId} post={post} />)
         ) : (
-          <div className="text-white flex h-screen place-items-center">
-            {error ? (
-              <section className="flex flex-col place-items-center gap-2">
-                <h1 className="text-red-500">Something Went Wrong</h1>
-                <ArrowPathIcon
-                  onClick={handleRefresh}
-                  className="w-7 h-7 cursor-pointer hover:animate-spin active:scale-110 rounded-md"
-                />
-              </section>
-            ) : (
-              <h1 className="">No Post</h1>
-            )}
+          <div className="text-white flex h-screen place-items-center ">
+            {error ? <ErrorPrisma /> : <h1 className="">No Post</h1>}
           </div>
         )}
       </div>

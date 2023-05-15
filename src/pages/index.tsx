@@ -9,6 +9,7 @@ import { formatDistanceToNow } from "date-fns";
 import { ArrowPathIcon } from "@heroicons/react/24/outline";
 import { useRouter } from "next/router";
 import { formatPosts } from "@/utils/postUtils";
+import ErrorPrisma from "@/components/ErrorPrisma";
 
 interface Props {
   posts: iPost[];
@@ -16,11 +17,6 @@ interface Props {
 }
 
 const Home: React.FC<Props> = ({ posts = [], error = false }) => {
-  const router = useRouter();
-  const handleRefresh = () => {
-    router.reload();
-  };
-
   return (
     <div className="mt-3 overflow-y-scroll h-[88vh]">
       <div className="flex flex-col items-center gap-2">
@@ -28,17 +24,7 @@ const Home: React.FC<Props> = ({ posts = [], error = false }) => {
           posts.map((post) => <PostCard key={post.postId} post={post} />)
         ) : (
           <div className="text-white flex h-screen place-items-center">
-            {error ? (
-              <section className="flex flex-col place-items-center gap-2">
-                <h1 className="text-red-500">Something Went Wrong</h1>
-                <ArrowPathIcon
-                  onClick={handleRefresh}
-                  className="w-7 h-7 cursor-pointer hover:animate-spin active:scale-110 rounded-md"
-                />
-              </section>
-            ) : (
-              <h1 className="">No Post</h1>
-            )}
+            {error ? <ErrorPrisma /> : <h1 className="">No Post</h1>}
           </div>
         )}
       </div>

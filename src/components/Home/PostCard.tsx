@@ -12,6 +12,7 @@ import { useRouter } from "next/router";
 import { useSession } from "next-auth/react";
 import ShowMore from "./ShowMore";
 import UpdatePostModal from "./UpdatePostModal";
+import toast from "react-hot-toast";
 
 interface Props {
   post: iPost;
@@ -33,52 +34,52 @@ const PostCard = ({ post: postProp, userId }: Props) => {
   }, []);
 
   const handleLike = async () => {
-    try {
-      const res = await fetch("/api/user/post/like", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-          Accept: "application/json",
-        },
-        body: JSON.stringify({
-          isLiked,
-          userId: user.id,
-          postId: post.postId,
-        }),
-      });
+    const res = await fetch("/api/user/post/like", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        Accept: "application/json",
+      },
+      body: JSON.stringify({
+        isLiked,
+        userId: user.id,
+        postId: post.postId,
+      }),
+    });
 
-      if (res.ok) {
-        if (isLiked) {
-          setTotalLikes((prev) => prev - 1);
-        } else {
-          setTotalLikes((prev) => prev + 1);
-        }
-        setIsLiked((prev) => !prev);
+    if (res.ok) {
+      if (isLiked) {
+        setTotalLikes((prev) => prev - 1);
+      } else {
+        setTotalLikes((prev) => prev + 1);
       }
-    } catch (error) {}
+      setIsLiked((prev) => !prev);
+    }
+    if (res.status == 500) {
+      toast.error("Something went wrong");
+    }
   };
 
   const handleDelete = async () => {
-    try {
-      const publicId = post.image?.split("/")?.pop()?.split(".")[0] ?? "";
-      console.log("yeah");
-      const res = await fetch(
-        `/api/user/post/delete?postId=${post.postId}&publicId=${publicId}`,
-        {
-          method: "DELETE",
-        }
-      );
-
-      if (res.ok) {
-        router.pathname === "/" ? router.reload() : router.push("/");
+    const publicId = post.image?.split("/")?.pop()?.split(".")[0] || "";
+    console.log("yeah");
+    const res = await fetch(
+      `/api/user/post/delete?postId=${post.postId}&publicId=${publicId}`,
+      {
+        method: "DELETE",
       }
-    } catch (error) {
-      console.log(error);
+    );
+
+    if (res.ok) {
+      router.pathname === "/" ? router.reload() : router.push("/");
+    }
+    if (res.status == 500) {
+      toast.error("Something went wrong");
     }
   };
 
   return (
-    <div className="border border-slate-500 w-[600px] flex gap-3 flex-col bg-base-100 p-2 rounded-lg last:mb-2">
+    <div className="border border-slate-500 w-[385px] md:w-[600px] flex gap-3 flex-col bg-base-100 p-5 md:p-2 rounded-lg last:mb-14">
       <UpdatePostModal
         setPost={setPost}
         modalId={"updatePost"}

@@ -13,21 +13,26 @@ import { authOptions } from "../api/auth/[...nextauth]";
 import { prisma } from "@/lib/prisma";
 import { formatPosts } from "@/utils/postUtils";
 import FriendCard from "@/components/Friends/FriendCard";
+import ErrorPrisma from "@/components/ErrorPrisma";
 
 interface Props {
   sent: iSentRequest[];
   receive: iReceiveRequest[];
   friend: iFriend[];
+  isError: boolean;
 }
 
-const index: React.FC<Props> = ({ receive, sent, friend }) => {
+const index: React.FC<Props> = ({
+  receive = [],
+  sent = [],
+  friend = [],
+  isError = false,
+}) => {
   useEffect(() => {
     setFriendList(friend);
     setReceiveRequest(receive);
     setSentRequest(sent);
   }, []);
-
-  console.log(friend);
 
   const [currentSelected, setCurrentSelected] = useState(1);
   const [friendList, setFriendList] = useState<iFriend[]>([]);
@@ -72,7 +77,7 @@ const index: React.FC<Props> = ({ receive, sent, friend }) => {
       </div>
 
       <div className=" flex flex-col  w-[50%] items-center">
-        <div className="flex place-items-center w-full">
+        <div className="flex place-items-center w-[350px] lg:w-full">
           <input
             type="text"
             placeholder="Search Here"
@@ -80,7 +85,11 @@ const index: React.FC<Props> = ({ receive, sent, friend }) => {
           />
           <MagnifyingGlassIcon className="cursor-pointer w-7 h-7 mr-2" />
         </div>
-        <div className="overflow-y-scroll  h-[450px] w-full">
+        <div
+          className={`overflow-y-scroll h-[450px] w-[300px] lg:w-full${
+            isError && "flex flex-col justify-center"
+          }`}
+        >
           {(() => {
             switch (currentSelected) {
               case 1:
@@ -92,9 +101,11 @@ const index: React.FC<Props> = ({ receive, sent, friend }) => {
                       key={user.id}
                     />
                   ))
+                ) : isError ? (
+                  <ErrorPrisma />
                 ) : (
                   <div className="flex justify-center items-center h-full">
-                    No Friend Request
+                    No Friend
                   </div>
                 );
               case 2:
@@ -107,6 +118,8 @@ const index: React.FC<Props> = ({ receive, sent, friend }) => {
                       key={user.id}
                     />
                   ))
+                ) : isError ? (
+                  <ErrorPrisma />
                 ) : (
                   <div className="flex justify-center items-center h-full">
                     No Friend Request
@@ -121,6 +134,8 @@ const index: React.FC<Props> = ({ receive, sent, friend }) => {
                       key={user.id}
                     />
                   ))
+                ) : isError ? (
+                  <ErrorPrisma />
                 ) : (
                   <div className="flex justify-center items-center h-full">
                     No Friend Request Sent
@@ -146,62 +161,71 @@ export const getServerSideProps: GetServerSideProps = async (context) => {
       },
     };
   }
-
-  const friendRequest = await prisma.user.findUnique({
-    where: {
-      userId: user.id,
-    },
-    select: {
-      sentRequests: {
-        include: {
-          receiver: {
-            select: {
-              userId: true,
-              firstName: true,
-              lastName: true,
-              avatar: true,
+  try {
+    const friendRequest = await prisma.user.findUnique({
+      where: {
+        userId: user.id,
+      },
+      select: {
+        sentRequests: {
+          include: {
+            receiver: {
+              select: {
+                userId: true,
+                firstName: true,
+                lastName: true,
+                avatar: true,
+              },
+            },
+          },
+        },
+        receivedRequests: {
+          include: {
+            sender: {
+              select: {
+                userId: true,
+                firstName: true,
+                lastName: true,
+                avatar: true,
+              },
+            },
+          },
+        },
+        friends: {
+          select: {
+            id: true,
+            friend: {
+              select: {
+                userId: true,
+                firstName: true,
+                lastName: true,
+                avatar: true,
+              },
             },
           },
         },
       },
-      receivedRequests: {
-        include: {
-          sender: {
-            select: {
-              userId: true,
-              firstName: true,
-              lastName: true,
-              avatar: true,
-            },
-          },
-        },
-      },
-      friends: {
-        select: {
-          id: true,
-          friend: {
-            select: {
-              userId: true,
-              firstName: true,
-              lastName: true,
-              avatar: true,
-            },
-          },
-        },
-      },
-    },
-  });
+    });
 
-  const formatedSentRequests = formatPosts(friendRequest?.sentRequests);
-  const formatedReceiveRequests = formatPosts(friendRequest?.receivedRequests);
+    const formatedSentRequests = formatPosts(friendRequest?.sentRequests);
+    const formatedReceiveRequests = formatPosts(
+      friendRequest?.receivedRequests
+    );
 
-  return {
-    props: {
-      sent: formatedSentRequests,
-      receive: formatedReceiveRequests,
-      friend: friendRequest?.friends,
-    },
-  };
+    return {
+      props: {
+        sent: formatedSentRequests,
+        receive: formatedReceiveRequests,
+        friend: friendRequest?.friends,
+      },
+    };
+  } catch (error) {
+    return {
+      props: {
+        isError: true,
+      },
+    };
+  }
 };
 
 export default index;

@@ -1,10 +1,16 @@
-import React from "react";
-import { HomeIcon, PlusIcon, Cog8ToothIcon } from "@heroicons/react/24/solid";
+import React, { useState } from "react";
+import {
+  HomeIcon,
+  PlusIcon,
+  ArrowLeftOnRectangleIcon,
+} from "@heroicons/react/24/solid";
 import Link from "next/link";
 import { signOut, useSession } from "next-auth/react";
 import { UserIcon, UsersIcon } from "@heroicons/react/24/outline";
 import NewPostModal from "./Home/NewPostModal";
 import { iMySession } from "@/types";
+import { Toaster } from "react-hot-toast";
+import { useRouter } from "next/router";
 
 interface Props {
   children: React.ReactElement;
@@ -12,13 +18,14 @@ interface Props {
 function HomeLayout({ children }: Props) {
   const session = useSession();
   const sessionUser = session.data?.user as iMySession;
+  const router = useRouter();
+  const [searchKey, setSearchKey] = useState("");
 
   return (
     <>
-      {/* Add Post Modal Start */}
-      <NewPostModal />
-      {/* Add Post Modal End */}
+      <Toaster />
 
+      {/* Header Start */}
       <header className="navbar bg-base-100">
         <div className="flex-1">
           <Link href={"/"} className="btn btn-ghost normal-case text-xl">
@@ -26,13 +33,24 @@ function HomeLayout({ children }: Props) {
           </Link>
         </div>
         <div className="flex-none gap-2">
-          <div className="form-control">
+          <form
+            className="form-control"
+            onSubmit={(e) => {
+              e.preventDefault();
+              router.push({
+                pathname: "/search",
+                query: { s: searchKey },
+              });
+            }}
+          >
             <input
               type="text"
               placeholder="Search"
               className="input input-bordered"
+              onChange={(e) => setSearchKey(e.target.value)}
+              value={searchKey}
             />
-          </div>
+          </form>
           <div className="dropdown dropdown-end">
             <Link
               href={`/profile/${sessionUser?.id}`}
@@ -41,35 +59,58 @@ function HomeLayout({ children }: Props) {
             >
               <div className="w-10 rounded-full">
                 <UserIcon className="" />
-                {/* <img src="https://media.istockphoto.com/id/1386479313/photo/happy-millennial-afro-american-business-woman-posing-isolated-on-white.jpg?s=1024x1024&w=is&k=20&c=5OK7djfD3cnNmQ-DR0iQzF-vmA-iTNN1TbuEyCG1DfA=" /> */}
               </div>
             </Link>
           </div>
         </div>
       </header>
+      {/* Header End */}
+      <NewPostModal />
+      {/* Mobile Nav Start */}
       <main className="flex min-h-[90vh]">
-        <aside className="bg-base-100">
-          <ul className="flex flex-col p-10 gap-2 ">
+        <div className="btm-nav md:hidden">
+          <label htmlFor="my-modal-4" className="text-primary">
+            <PlusIcon className="w-8 h-8" />
+          </label>
+          <Link href={"/"} className="text-primary">
+            <HomeIcon className="w-8 h-8" />
+          </Link>
+          <Link href={"/friends"} className="text-primary">
+            <UsersIcon className="w-8 h-8" />
+          </Link>
+          <button
+            onClick={() =>
+              signOut({ redirect: true, callbackUrl: "/auth/login" })
+            }
+            className="text-accent"
+          >
+            <ArrowLeftOnRectangleIcon className="lg:hidden w-7 h-7" />
+            <span className="hidden lg:block">Log out</span>
+          </button>
+        </div>
+        {/* Mobile Nav End */}
+        <aside className="bg-base-100 hidden md:block ">
+          <ul className="flex flex-col p-3 lg:p-10 gap-2 ">
             <label
               htmlFor="my-modal-4"
-              className="flex text-xl gap-2 p-2 rounded-lg hover:bg-base-200 place-items-center cursor-pointer active:scale-x-110"
+              className="lg:flex text-xl gap-2 p-2 rounded-lg hover:bg-base-200 items-center  cursor-pointer active:scale-x-110"
             >
-              <PlusIcon className="w-8 h-8  " />
-              <span>New Post</span>
+              <PlusIcon className="w-8 h-8" />
+              <span className="hidden lg:block">New Post</span>
             </label>
             <Link
               href={"/"}
-              className="flex text-xl gap-2 p-2 rounded-lg hover:bg-base-200 place-items-center cursor-pointer active:scale-x-110"
+              className="lg:flex text-xl gap-2 p-2 rounded-lg hover:bg-base-200 items-center  cursor-pointer active:scale-x-110"
             >
-              <HomeIcon className="w-8 h-8  " />
-              <span>Home</span>
+              <HomeIcon className="w-8 h-8" />
+              <span className="hidden lg:block">Home</span>
             </Link>
             <Link
               href={"/friends"}
-              className="flex text-xl gap-2 p-2 rounded-lg hover:bg-base-200 place-items-center cursor-pointer active:scale-x-110"
+              className="lg:flex text-xl gap-2 p-2 rounded-lg hover:bg-base-200 items-center cursor-pointer active:scale-x-110"
             >
               <UsersIcon className="w-8 h-8" />
-              <span>Friends</span>
+              <span className="hidden lg:block">Friends</span>
             </Link>
             <li className="">
               <button
@@ -78,7 +119,8 @@ function HomeLayout({ children }: Props) {
                 }
                 className=" rounded-md btn btn-active btn-primary"
               >
-                Logout
+                <ArrowLeftOnRectangleIcon className="lg:hidden w-7 h-7" />
+                <span className="hidden lg:block">Log out</span>
               </button>
             </li>
           </ul>

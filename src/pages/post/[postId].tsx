@@ -19,12 +19,15 @@ import { getServerSession } from "next-auth";
 import { authOptions } from "../api/auth/[...nextauth]";
 import { useSession } from "next-auth/react";
 import UpdateModal from "@/components/Home/UpdateCommentModal";
+import ErrorPrisma from "@/components/ErrorPrisma";
+import toast from "react-hot-toast";
 
 interface Props {
   post: iPost & { comments: iComment[] };
+  isError: boolean;
 }
 
-const Post: React.FC<Props> = ({ post }) => {
+const Post: React.FC<Props> = ({ post, isError = false }) => {
   useEffect(() => {
     setComments(post.comments);
   }, []);
@@ -36,21 +39,22 @@ const Post: React.FC<Props> = ({ post }) => {
 
   const handleAddComments = async (e: React.FormEvent) => {
     e.preventDefault();
-    try {
-      const res = await fetch("/api/user/post/comment/new", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-          Accept: "application/json",
-        },
-        body: JSON.stringify({
-          description,
-          postId: post.postId,
-          userId: user.id,
-        }),
-      });
-      const data = await res.json();
 
+    const res = await fetch("/api/user/post/comment/new", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        Accept: "application/json",
+      },
+      body: JSON.stringify({
+        description,
+        postId: post.postId,
+        userId: user.id,
+      }),
+    });
+    const data = await res.json();
+
+    if (res.ok) {
       const newComment = {
         ...data,
         createdAt: formatDistanceToNow(new Date(data.createdAt).getTime(), {
@@ -60,44 +64,55 @@ const Post: React.FC<Props> = ({ post }) => {
 
       setComments((prev) => [...prev, newComment]);
       setDescription("");
-    } catch (error) {
-      console.log(error);
+    }
+    if (res.status == 500) {
+      toast.error("Something went wrong");
     }
   };
 
   return (
     <div className="mt-3 overflow-y-scroll h-[88vh]">
-      <div className="flex flex-col items-center gap-2">
-        <PostCard post={post} />
-        <div className="w-[600px] border rounded-lg p-3">
-          <h1 ref={ref} className="text-xl mb-1">
-            Comments
-          </h1>
-          {comments.map((comment: iComment) => (
-            <CommentCard
-              key={comment.commentId}
-              comment={comment}
-              setComments={setComments}
-            />
-          ))}
-        </div>
-        <form
-          onSubmit={handleAddComments}
-          className={`${
-            inView ? "" : "hidden"
-          } flex place-items-center gap-2 sticky bottom-0 m-2 w-2/4`}
-        >
-          <textarea
-            value={description}
-            onChange={(e) => setDescription(e.target.value)}
-            className="textarea resize-none w-full"
-            placeholder="Comment here"
-          ></textarea>
+      <div
+        className={`flex flex-col items-center gap-2 ${
+          isError && `h-full justify-center`
+        }`}
+      >
+        {!isError ? (
+          <>
+            <PostCard post={post} />
+            <div className="w-[390px] md:w-[600px] border rounded-lg p-3">
+              <h1 ref={ref} className="text-xl mb-1">
+                Comments
+              </h1>
+              {comments.map((comment: iComment) => (
+                <CommentCard
+                  key={comment.commentId}
+                  comment={comment}
+                  setComments={setComments}
+                />
+              ))}
+            </div>
+            <form
+              onSubmit={handleAddComments}
+              className={`${
+                inView ? "" : "hidden"
+              } flex place-items-center gap-2 sticky bottom-10 md:bottom-0 mb-20  m-2 w-2/4`}
+            >
+              <textarea
+                value={description}
+                onChange={(e) => setDescription(e.target.value)}
+                className="textarea resize-none w-full"
+                placeholder="Comment here"
+              ></textarea>
 
-          <button type="submit">
-            <PaperAirplaneIcon className="w-10 h-10 cursor-pointer active:scale-110" />
-          </button>
-        </form>
+              <button type="submit">
+                <PaperAirplaneIcon className="w-10 h-10 cursor-pointer active:scale-110" />
+              </button>
+            </form>
+          </>
+        ) : (
+          <ErrorPrisma />
+        )}
       </div>
     </div>
   );
@@ -192,7 +207,10 @@ export const getServerSideProps: GetServerSideProps = async (context) => {
     };
   } catch (error) {
     return {
-      props: {},
+      props: {
+        post: {},
+        isError: true,
+      },
     };
   }
 };

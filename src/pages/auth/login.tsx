@@ -4,6 +4,8 @@ import { useRouter } from "next/router";
 import { useSession } from "next-auth/react";
 import toast, { Toaster } from "react-hot-toast";
 import Link from "next/link";
+import { ArrowPathIcon } from "@heroicons/react/24/solid";
+import Loading from "@/components/Loading";
 
 const Login = () => {
   const [formData, setFormData] = useState<{
@@ -62,7 +64,7 @@ const Login = () => {
     setIsLoading(false);
   };
   if (session.status === "loading") {
-    return <section className="bg-base-200">Loading....</section>;
+    return <Loading />;
   }
   if (session.status === "authenticated") {
     router.push("/");
@@ -70,12 +72,12 @@ const Login = () => {
   }
 
   return (
-    <section className="hero min-h-screen bg-base-200">
+    <section className="hero h-screen overflow-y-scroll bg-base-200">
       <Toaster />
-      <div className="hero-content flex-col lg:flex-row-reverse">
+      <div className="flex flex-col gap-5 lg:flex-row-reverse">
         <form
           onSubmit={handleSubmit}
-          className="card flex-shrink-0 w-full max-w-sm shadow-2xl bg-base-100"
+          className="card flex-shrink-0  order-last  w-full max-w-sm shadow-2xl bg-base-100"
         >
           <div className="card-body">
             {errors?.response && (
@@ -132,7 +134,7 @@ const Login = () => {
               <label className="label">
                 <Link
                   href="/auth/register"
-                  className="label-text-alt link link-hover"
+                  className="label-text-alt link link-hover underline text-blue-400"
                 >
                   New User?
                 </Link>
@@ -145,7 +147,7 @@ const Login = () => {
             </div>
           </div>
         </form>
-        <div className="text-center lg:text-left w-96">
+        <div className="text-center lg:text-left w-96  lg:order-last">
           <h1 className="text-5xl font-bold">Login now!</h1>
           <p className="py-6">
             Provident cupiditate voluptatem et in. Quaerat fugiat ut assumenda

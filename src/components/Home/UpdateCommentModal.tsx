@@ -1,6 +1,7 @@
 import { prisma } from "@/lib/prisma";
 import { iComment } from "@/types";
 import React, { useEffect, useRef, useState } from "react";
+import toast from "react-hot-toast";
 
 interface Props {
   comment: iComment;
@@ -28,34 +29,33 @@ const UpdateCommentModal = ({ comment, modalId, setComments }: Props) => {
   const handleUpdateCommnet = async (e: React.FormEvent) => {
     e.preventDefault();
 
-    try {
-      const res = await fetch("/api/user/post/comment/update", {
-        method: "PUT",
-        headers: {
-          Accept: "application/json",
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({
-          userId: comment.userId,
-          commentId: comment.commentId,
-          description: newDescription,
-        }),
-      });
-      if (res.ok) {
-        const data = await res.json();
+    const res = await fetch("/api/user/post/comment/update", {
+      method: "PUT",
+      headers: {
+        Accept: "application/json",
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({
+        userId: comment.userId,
+        commentId: comment.commentId,
+        description: newDescription,
+      }),
+    });
+    if (res.ok) {
+      const data = await res.json();
 
-        console.log(data);
-        setComments((comments) =>
-          comments.map((comment) =>
-            comment.commentId === data.commentId
-              ? { ...comment, description: data?.description }
-              : comment
-          )
-        );
-        closeRef.current?.click();
-      }
-    } catch (error) {
-      console.log(error);
+      console.log(data);
+      setComments((comments) =>
+        comments.map((comment) =>
+          comment.commentId === data.commentId
+            ? { ...comment, description: data?.description }
+            : comment
+        )
+      );
+      closeRef.current?.click();
+    }
+    if (res.status == 500) {
+      toast.error("Something went wrong");
     }
   };
 

@@ -1,10 +1,11 @@
-import React, { useRef } from "react";
+import React, { useRef, useState } from "react";
 import { UserIcon, UserMinusIcon } from "@heroicons/react/24/solid";
 import Link from "next/link";
 import YesOrNo from "./YesOrNo";
 import { StreamingProfiles } from "cloudinary";
 import { iFriend, iMySession } from "@/types";
 import { useSession } from "next-auth/react";
+import toast from "react-hot-toast";
 
 interface Props {
   user: {
@@ -22,19 +23,25 @@ const FriendCard: React.FC<Props> = ({ user, setFriendList }) => {
   const session = useSession();
   const sessionUser = session.data?.user as iMySession;
 
+  const [clickCount, setClickCount] = useState(0);
+
   const handleRemoveFriend = async () => {
-    try {
-      const res = await fetch(
-        `/api/user/friend/remove?friendId=${user.userId}&userId=${sessionUser.id}`,
-        {
-          method: "DELETE",
-        }
-      );
-      if (res.ok) {
-        setFriendList((prev) => prev.filter((usr) => usr.id !== user.id));
+    setClickCount((prev) => prev + 1);
+    const res = await fetch(
+      `/api/user/friend/remove?friendId=${user.userId}&userId=${sessionUser.id}`,
+      {
+        method: "DELETE",
       }
-    } catch (error) {
-      console.log(error);
+    );
+    if (res.ok) {
+      setFriendList((prev) => prev.filter((usr) => usr.id !== user.id));
+      return;
+    }
+
+    if (res.status === 500) {
+      if (clickCount <= 3) {
+        toast.error("Something Went Wrong");
+      }
     }
   };
   return (

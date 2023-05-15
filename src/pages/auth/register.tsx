@@ -4,6 +4,8 @@ import { ArrowLeftIcon } from "@heroicons/react/24/solid";
 import { useRouter } from "next/router";
 import { useSession } from "next-auth/react";
 import Link from "next/link";
+import toast from "react-hot-toast";
+import Loading from "@/components/Loading";
 
 const Register = () => {
   const [isNext, setIsNext] = useState<boolean>(false);
@@ -96,17 +98,21 @@ const Register = () => {
         },
         body: JSON.stringify(formData),
       });
-      // const data = await res.json();
 
-      router.push("/auth/login");
+      if (res.ok) {
+        router.push("/auth/login");
+      }
+
+      if (res.status === 500) {
+        toast.error("Something went wrong");
+      }
     } catch (error: any) {
-      console.log(error?.message);
       setIsLoading(false);
     }
   };
 
   if (session.status === "loading") {
-    return <section className="bg-base-200">Loading....</section>;
+    return <Loading />;
   }
   if (session.status === "authenticated") {
     router.push("/");
@@ -114,11 +120,11 @@ const Register = () => {
   }
 
   return (
-    <section className="hero min-h-screen bg-base-200">
-      <div className="hero-content flex-col lg:flex-row-reverse">
+    <section className="hero h-screen overflow-y-scroll bg-base-200">
+      <div className="flex gap-5 flex-col lg:flex-row-reverse">
         <form
           onSubmit={handleSubmit}
-          className="card flex-shrink-0 w-full max-w-sm shadow-2xl bg-base-100"
+          className="card flex-shrink-0 w-full order-last max-w-sm shadow-2xl bg-base-100"
         >
           <div className="card-body">
             {!isNext ? (
@@ -250,7 +256,7 @@ const Register = () => {
             <label className="label">
               <Link
                 href="/auth/login"
-                className="label-text-alt link link-hover"
+                className="label-text-alt link link-hover underline text-blue-400"
               >
                 Already Have an account?
               </Link>
@@ -258,7 +264,7 @@ const Register = () => {
           </div>
         </form>
 
-        <div className="text-center lg:text-left w-96">
+        <div className="text-center lg:text-left w-96 lg:order-last">
           <h1 className="text-5xl font-bold">Register!</h1>
           <p className="py-6">
             Provident cupiditate voluptatem et in. Quaerat fugiat ut assumenda

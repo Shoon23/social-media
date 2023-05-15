@@ -5,6 +5,7 @@ import { useRouter } from "next/router";
 import Link from "next/link";
 import { getSession, useSession } from "next-auth/react";
 import { iFriend, iMySession, iReceiveRequest } from "@/types";
+import { toast } from "react-hot-toast";
 
 interface Props {
   user: {
@@ -25,35 +26,38 @@ const RequestCard: React.FC<Props> = ({
 }) => {
   const session = useSession();
   const sessionUser = session.data?.user as iMySession;
-
+  const [countClick, setCountClick] = useState(0);
   const [isAccepted, setIsAccepted] = useState(false);
 
   const handleAcceptFriend = async () => {
-    try {
-      const res = await fetch("/api/user/friend/accept", {
-        method: "POST",
-        headers: {
-          Accept: "application/json",
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({
-          userId: sessionUser.id,
-          friendId: user.userId,
-          friendRequestId: user.id,
-        }),
-      });
-      const data = await res.json();
-      if (res.ok) {
-        setIsAccepted(true);
-        setTimeout(() => {
-          setReceiveRequest((prev) =>
-            prev.filter((usr) => usr.senderId !== user.userId)
-          );
-        }, 5000);
-        setFriendList((prev) => [...prev, data]);
+    setCountClick((prev) => prev + 1);
+    const res = await fetch("/api/user/friend/accept", {
+      method: "POST",
+      headers: {
+        Accept: "application/json",
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({
+        userId: sessionUser.id,
+        friendId: user.userId,
+        friendRequestId: user.id,
+      }),
+    });
+    const data = await res.json();
+    if (res.ok) {
+      setIsAccepted(true);
+      setTimeout(() => {
+        setReceiveRequest((prev) =>
+          prev.filter((usr) => usr.senderId !== user.userId)
+        );
+      }, 5000);
+      setFriendList((prev) => [...prev, data]);
+    }
+
+    if (res.status === 500) {
+      if (countClick <= 3) {
+        toast.error("Something went wrong");
       }
-    } catch (error) {
-      console.log(error);
     }
   };
   return (

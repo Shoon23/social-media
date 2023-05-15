@@ -9,6 +9,7 @@ import React, { useEffect, useState } from "react";
 import ShowMore from "./ShowMore";
 import UpdateModal from "./UpdateCommentModal";
 import UpdateCommentModal from "./UpdateCommentModal";
+import { toast } from "react-hot-toast";
 
 interface Props {
   comment: iComment;
@@ -27,46 +28,44 @@ const CommentCard: React.FC<Props> = ({ comment, setComments }) => {
   const [totalLikes, setTotalLikes] = useState<number>(comment.totalLikes);
 
   const handleLike = async () => {
-    try {
-      const res = await fetch("/api/user/post/comment/like", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-          Accept: "application/json",
-        },
-        body: JSON.stringify({
-          isLiked,
-          commentId: comment.commentId,
-          userId: user.id,
-        }),
-      });
+    const res = await fetch("/api/user/post/comment/like", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        Accept: "application/json",
+      },
+      body: JSON.stringify({
+        isLiked,
+        commentId: comment.commentId,
+        userId: user.id,
+      }),
+    });
 
-      if (res.ok) {
-        if (isLiked) {
-          setTotalLikes((prev) => prev - 1);
-        } else {
-          setTotalLikes((prev) => prev + 1);
-        }
-        setIsLiked((prev) => !prev);
+    if (res.ok) {
+      if (isLiked) {
+        setTotalLikes((prev) => prev - 1);
+      } else {
+        setTotalLikes((prev) => prev + 1);
       }
-    } catch (error) {
-      console.log(error);
+      setIsLiked((prev) => !prev);
+    }
+    if (res.status === 500) {
+      toast.error("Something Went Wrong");
     }
   };
 
   const handleDeleteComment = async () => {
-    try {
-      const res = await fetch(`/api/user/post/comment/${comment.commentId}`, {
-        method: "DELETE",
-      });
+    const res = await fetch(`/api/user/post/comment/${comment.commentId}`, {
+      method: "DELETE",
+    });
 
-      if (res.ok) {
-        setComments((prev) =>
-          prev.filter((item) => item.commentId !== comment.commentId)
-        );
-      }
-    } catch (error) {
-      console.log(error);
+    if (res.ok) {
+      setComments((prev) =>
+        prev.filter((item) => item.commentId !== comment.commentId)
+      );
+    }
+    if (res.status === 500) {
+      toast.error("Something Went Wrong");
     }
   };
 

@@ -60,7 +60,6 @@ const NewPostModal = () => {
           imageUrl: cloudinaryData?.secure_url ?? null,
         }),
       });
-      const data = await res.json();
       closeRef.current?.click();
       setIsPost(false);
       setImage(null);
@@ -68,7 +67,10 @@ const NewPostModal = () => {
       setDescription("");
       setError("");
     } catch (error) {
-      console.log(error);
+      setError("Something Went Wrong Please try again later");
+      setTimeout(() => {
+        closeRef.current?.click();
+      }, 3000);
     }
   };
 

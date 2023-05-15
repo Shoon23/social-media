@@ -1,9 +1,10 @@
-import React, { useRef } from "react";
+import React, { useRef, useState } from "react";
 
 import { UserIcon, XMarkIcon } from "@heroicons/react/24/solid";
 import { iFriend, iSentRequest } from "@/types";
 import YesOrNo from "./YesOrNo";
 import Link from "next/link";
+import toast from "react-hot-toast";
 
 interface Props {
   user: {
@@ -18,23 +19,26 @@ interface Props {
 
 const SentCard: React.FC<Props> = ({ user, setSentRequest }) => {
   const closeRef = useRef<HTMLLabelElement>(null);
-
+  const [countClick, setCountClick] = useState(0);
   const handleCancelRequest = async () => {
-    try {
-      const res = await fetch(
-        `/api/user/friend/cancel?friendRequestId=${user.id}`,
-        {
-          method: "DELETE",
-        }
-      );
-      if (res.ok) {
-        closeRef?.current?.click();
-        setTimeout(() => {
-          setSentRequest((prev) => prev.filter((usr) => usr.id !== user.id));
-        }, 5000);
+    setCountClick((prev) => prev + 1);
+    const res = await fetch(
+      `/api/user/friend/cancel?friendRequestId=${user.id}`,
+      {
+        method: "DELETE",
       }
-    } catch (error) {
-      console.log(error);
+    );
+    if (res.ok) {
+      closeRef?.current?.click();
+      setTimeout(() => {
+        setSentRequest((prev) => prev.filter((usr) => usr.id !== user.id));
+      }, 5000);
+    }
+
+    if (res.status === 500) {
+      if (countClick <= 3) {
+        toast.error("Something went wrong");
+      }
     }
   };
   return (

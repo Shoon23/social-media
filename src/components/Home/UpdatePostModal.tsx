@@ -1,6 +1,7 @@
 import { iPost } from "@/types";
 import { useSession } from "next-auth/react";
 import React, { useEffect, useRef, useState } from "react";
+import toast from "react-hot-toast";
 
 interface Props {
   modalId: string;
@@ -44,26 +45,25 @@ const UpdatePostModal: React.FC<Props> = ({ modalId, post, setPost }) => {
   const handleUpdate = async (e: React.FormEvent) => {
     e.preventDefault();
 
-    try {
-      const res = await fetch("/api/user/post/update", {
-        method: "PUT",
-        headers: {
-          Accept: "application/json",
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({
-          postId: post.postId,
-          userId: post.userId,
-          description,
-        }),
-      });
+    const res = await fetch("/api/user/post/update", {
+      method: "PUT",
+      headers: {
+        Accept: "application/json",
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({
+        postId: post.postId,
+        userId: post.userId,
+        description,
+      }),
+    });
 
-      if (res.ok) {
-        setPost((prev: any) => ({ ...prev, description }));
-        closeRef.current?.click();
-      }
-    } catch (error) {
-      console.log(error);
+    if (res.ok) {
+      setPost((prev: any) => ({ ...prev, description }));
+      closeRef.current?.click();
+    }
+    if (res.status == 500) {
+      toast.error("Something went wrong");
     }
   };
   return (
