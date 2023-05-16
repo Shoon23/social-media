@@ -12,6 +12,7 @@ import {
 import Link from "next/link";
 import Loading from "@/components/Loading";
 import SearchResultCard from "@/components/Search/SearchResultCard";
+import ErrorPrisma from "@/components/ErrorPrisma";
 
 interface Props {
   searchResults: {
@@ -27,7 +28,7 @@ interface Props {
 const SearchResult: React.FC<Props> = ({
   searchResults,
   searchKey,
-  isError,
+  isError = false,
 }) => {
   return (
     <div className="flex flex-col items-center mt-3 gap-2">
@@ -41,9 +42,13 @@ const SearchResult: React.FC<Props> = ({
           }`}
         >
           <Suspense fallback={<Loading />}>
-            {searchResults.map((search) => (
-              <SearchResultCard user={search} />
-            ))}
+            {searchResults.length !== 0 ? (
+              searchResults.map((search) => <SearchResultCard user={search} />)
+            ) : (
+              <div className="text-white flex justify-center mt-10 text-lg">
+                {isError ? <ErrorPrisma /> : <h1 className="">No Results</h1>}
+              </div>
+            )}
           </Suspense>
         </div>
       </div>
@@ -88,7 +93,9 @@ export const getServerSideProps: GetServerSideProps = async (context) => {
     };
   } catch (error) {
     return {
-      props: {},
+      props: {
+        isError: true,
+      },
     };
   }
 };
