@@ -141,6 +141,12 @@ The social-media project is  a web-based social media application developed usin
 
    A user can remove a friend in his list.
 
+## Respnosive 
+
+  ![Image Alt Text](https://res.cloudinary.com/dkarsw8bs/image/upload/v1686834327/md/social-media/Responsive.png)
+
+
+
 
 
 
