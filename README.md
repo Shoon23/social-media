@@ -3,6 +3,13 @@
 ## Overview
 The social-media project is  a web-based social media application developed using React.js and other related technologies. It could be a platform that allows users to create accounts, connect with friends, post content, and interact with other users through features such as comments, likes, and sharing
 
+## Webiste
+    link:https://social-media-life.vercel.app/
+    email: johndoe@gmail.com
+    password:johndoepassword
+
+
+
 ## Getting Started
     git clone <repo link>
     cd keyboard_eccomrce
