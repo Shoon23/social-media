@@ -2,15 +2,7 @@ import { GetServerSideProps } from "next";
 import { getServerSession } from "next-auth";
 import React, { Suspense } from "react";
 import { authOptions } from "../api/auth/[...nextauth]";
-import { iMySession } from "@/types";
 import { prisma } from "@/lib/prisma";
-import {
-  MagnifyingGlassIcon,
-  UserIcon,
-  UserMinusIcon,
-} from "@heroicons/react/24/solid";
-import Link from "next/link";
-import Loading from "@/components/Loading";
 import SearchResultCard from "@/components/Search/SearchResultCard";
 import ErrorPrisma from "@/components/ErrorPrisma";
 
@@ -41,7 +33,7 @@ const SearchResult: React.FC<Props> = ({
             isError && "flex flex-col justify-center"
           }`}
         >
-          <Suspense fallback={<Loading />}>
+          <Suspense fallback={<div>Loading...</div>}>
             {searchResults.length !== 0 ? (
               searchResults.map((search) => <SearchResultCard user={search} />)
             ) : (

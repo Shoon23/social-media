@@ -1,15 +1,14 @@
-import PostCard from "@/components/Home/PostCard";
-import React from "react";
+// const PostCard = React.lazy(() => import("@/components/Home/PostCard"));
+import React, { Suspense } from "react";
 import { GetServerSideProps } from "next";
 import { getServerSession } from "next-auth";
 import { authOptions } from "./api/auth/[...nextauth]";
 import { prisma } from "@/lib/prisma";
 import { iMySession, iPost } from "@/types";
-import { formatDistanceToNow } from "date-fns";
-import { ArrowPathIcon } from "@heroicons/react/24/outline";
-import { useRouter } from "next/router";
 import { formatPosts } from "@/utils/postUtils";
 import ErrorPrisma from "@/components/ErrorPrisma";
+import PostCard from "@/components/Home/PostCard";
+import Loading from "@/components/Loading";
 
 interface Props {
   posts: iPost[];

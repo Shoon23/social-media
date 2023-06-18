@@ -64,7 +64,11 @@ const Login = () => {
     setIsLoading(false);
   };
   if (session.status === "loading") {
-    return <Loading />;
+    return (
+      <section className="bg-base-100 flex items-center justify-center h-screen">
+        <Loading />;
+      </section>
+    );
   }
   if (session.status === "authenticated") {
     router.push("/");
