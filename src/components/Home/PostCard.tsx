@@ -15,23 +15,25 @@ import UpdatePostModal from "./UpdatePostModal";
 import toast from "react-hot-toast";
 
 interface Props {
-  post: iPost;
   userId?: string;
+  post: iPost;
+  commentTotal?: number;
 }
 
-const PostCard = ({ post: postProp, userId }: Props) => {
+const PostCard = ({ post: postProp, userId, commentTotal }: Props) => {
   const router = useRouter();
   const session = useSession();
   const user = session.data?.user as iMySession;
   const [isLiked, setIsLiked] = useState<boolean>();
   const [totalLikes, setTotalLikes] = useState<number>(postProp.totalLikes);
-  const [post, setPost] = useState<any>({});
   const [isLoading, setIsLoading] = useState(true);
+  const [post, setPost] = useState<any>({});
+
   useEffect(() => {
     setIsLiked(postProp.isLiked);
     setTotalLikes(postProp.totalLikes);
-    setPost(postProp);
     setIsLoading(false);
+    setPost(postProp);
   }, []);
 
   const handleLike = async () => {
@@ -81,7 +83,7 @@ const PostCard = ({ post: postProp, userId }: Props) => {
   return (
     <div className="border border-slate-500 w-[385px] md:w-[600px] flex gap-3 flex-col bg-base-100 p-5 md:p-2 rounded-lg last:mb-14">
       {isLoading ? (
-        <div className="self-center">
+        <div className="self-center w-full h-20 flex items-center justify-center">
           <Loading />
         </div>
       ) : (
@@ -135,7 +137,7 @@ const PostCard = ({ post: postProp, userId }: Props) => {
                 isLiked && "fill-red-500"
               }`}
             />
-            <h1>{post?.comments?.length}</h1>
+            <h1>{commentTotal ? commentTotal : post?.comments?.length}</h1>
             <Link href={`/post/${post.postId}`}>
               <ChatBubbleLeftIcon className="w-8 h-8 cursor-pointer hover:scale-110 transition ease-in-out delay-150" />
             </Link>

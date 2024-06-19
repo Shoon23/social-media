@@ -14,18 +14,23 @@ import { toast } from "react-hot-toast";
 interface Props {
   comment: iComment;
   setComments: React.Dispatch<React.SetStateAction<iComment[]>>;
+  setCommentTotal: React.Dispatch<React.SetStateAction<number>>;
 }
 
-const CommentCard: React.FC<Props> = ({ comment, setComments }) => {
+const CommentCard: React.FC<Props> = ({
+  comment,
+  setComments,
+  setCommentTotal,
+}) => {
   useEffect(() => {
     setIsLiked(comment.isLiked);
-    setTotalLikes(comment.totalLikes);
+    setTotalLikes(Number(comment.totalLikes));
   }, []);
 
   const session = useSession();
   const user = session.data?.user as iMySession;
   const [isLiked, setIsLiked] = useState<boolean>();
-  const [totalLikes, setTotalLikes] = useState<number>(comment.totalLikes);
+  const [totalLikes, setTotalLikes] = useState<number>(0);
 
   const handleLike = async () => {
     const res = await fetch("/api/user/post/comment/like", {
@@ -41,17 +46,23 @@ const CommentCard: React.FC<Props> = ({ comment, setComments }) => {
       }),
     });
 
-    if (res.ok) {
-      if (isLiked) {
-        setTotalLikes((prev) => prev - 1);
-      } else {
-        setTotalLikes((prev) => prev + 1);
-      }
-      setIsLiked((prev) => !prev);
-    }
     if (res.status === 500) {
       toast.error("Something Went Wrong");
+      return;
     }
+
+    setTotalLikes((prev) => {
+      if (isLiked) {
+        if (!prev) {
+          return 1;
+        }
+
+        return Number(prev) - 1;
+      }
+      return Number(prev) + 1;
+    });
+
+    setIsLiked((prev) => !prev);
   };
 
   const handleDeleteComment = async () => {
@@ -59,14 +70,15 @@ const CommentCard: React.FC<Props> = ({ comment, setComments }) => {
       method: "DELETE",
     });
 
-    if (res.ok) {
-      setComments((prev) =>
-        prev.filter((item) => item.commentId !== comment.commentId)
-      );
-    }
     if (res.status === 500) {
       toast.error("Something Went Wrong");
+      return;
     }
+
+    setComments((prev) =>
+      prev.filter((item) => item.commentId !== comment.commentId)
+    );
+    setCommentTotal((prev) => prev - 1);
   };
 
   return (
@@ -77,7 +89,6 @@ const CommentCard: React.FC<Props> = ({ comment, setComments }) => {
         modalId="updateModal"
         setComments={setComments}
       />
-
       {/* Update Modal End */}
       <div className="flex items-center gap-2 ">
         <div className="avatar">

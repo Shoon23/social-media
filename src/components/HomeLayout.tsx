@@ -73,10 +73,16 @@ function HomeLayout({ children }: Props) {
             <PlusIcon className="w-8 h-8" />
           </label>
           <Link href={"/"} className="text-primary">
-            <HomeIcon className="w-8 h-8" />
+            <HomeIcon
+              className="w-8 h-8"
+              color={router.pathname === "/" ? "black" : ""}
+            />
           </Link>
           <Link href={"/friends"} className="text-primary">
-            <UsersIcon className="w-8 h-8" />
+            <UsersIcon
+              className="w-8 h-8"
+              color={router.pathname === "/friends" ? "black" : ""}
+            />
           </Link>
           <button
             onClick={() =>
@@ -100,14 +106,18 @@ function HomeLayout({ children }: Props) {
             </label>
             <Link
               href={"/"}
-              className="lg:flex text-xl gap-2 p-2 rounded-lg hover:bg-base-200 items-center  cursor-pointer active:scale-x-110"
+              className={`${
+                router.pathname === "/" ? "bg-base-200" : ""
+              } lg:flex text-xl gap-2 p-2 rounded-lg hover:bg-base-200 items-center  cursor-pointer active:scale-x-110`}
             >
               <HomeIcon className="w-8 h-8" />
               <span className="hidden lg:block">Home</span>
             </Link>
             <Link
               href={"/friends"}
-              className="lg:flex text-xl gap-2 p-2 rounded-lg hover:bg-base-200 items-center cursor-pointer active:scale-x-110"
+              className={`${
+                router.pathname === "/friends" ? "bg-base-200" : ""
+              } lg:flex text-xl gap-2 p-2 rounded-lg hover:bg-base-200 items-center cursor-pointer active:scale-x-110`}
             >
               <UsersIcon className="w-8 h-8" />
               <span className="hidden lg:block">Friends</span>

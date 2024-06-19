@@ -30,13 +30,15 @@ interface Props {
 const Post: React.FC<Props> = ({ post, isError = false }) => {
   useEffect(() => {
     setComments(post.comments);
+    setCommentTotal(post.comments.length);
   }, []);
   const { ref, inView, entry } = useInView({});
   const [comments, setComments] = useState<iComment[]>([]);
   const [description, setDescription] = useState("");
   const session = useSession();
+  const [commentTotal, setCommentTotal] = useState(0);
   const user = session.data?.user as iMySession;
-
+  // console.log(post);
   const handleAddComments = async (e: React.FormEvent) => {
     e.preventDefault();
 
@@ -60,8 +62,10 @@ const Post: React.FC<Props> = ({ post, isError = false }) => {
         createdAt: formatDistanceToNow(new Date(data.createdAt).getTime(), {
           addSuffix: true,
         }),
+        totalLikes: 0,
       };
 
+      setCommentTotal((prev) => prev + 1);
       setComments((prev) => [...prev, newComment]);
       setDescription("");
     }
@@ -79,24 +83,24 @@ const Post: React.FC<Props> = ({ post, isError = false }) => {
       >
         {!isError ? (
           <>
-            <PostCard post={post} />
+            <PostCard post={post} commentTotal={commentTotal} />
             <div className="w-[390px] md:w-[600px] border rounded-lg p-3">
-              <h1 ref={ref} className="text-xl mb-1">
-                Comments
-              </h1>
-              {comments.map((comment: iComment) => (
+              <h1 className="text-xl mb-1">Comments</h1>
+              {comments.map((comment: iComment, idx: number) => (
                 <CommentCard
                   key={comment.commentId}
                   comment={comment}
                   setComments={setComments}
+                  setCommentTotal={setCommentTotal}
                 />
               ))}
+              <div ref={ref}></div>
             </div>
             <form
               onSubmit={handleAddComments}
               className={`${
-                inView ? "" : "hidden"
-              } flex place-items-center gap-2 sticky bottom-10 md:bottom-0 mb-20  m-2 w-2/4`}
+                !inView && "hidden"
+              } flex place-items-center gap-2 sticky bottom-10 md:bottom-0 mb-20  m-2 mt-10 w-11/12`}
             >
               <textarea
                 value={description}

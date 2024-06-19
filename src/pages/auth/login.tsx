@@ -28,7 +28,7 @@ const Login = () => {
     }));
     setFormData((prev) => ({
       ...prev,
-      [e.target.name]: e.target.value,
+      [e.target.name]: e.target.value.trim(),
     }));
   };
 
@@ -54,19 +54,20 @@ const Login = () => {
 
     if (res?.ok) {
       router.push("/");
+      setIsLoading(false);
     } else {
       if (res?.error === "500") {
         toast.error("Something Went Wrong");
       } else {
         setError((prev) => ({ ...prev, response: res?.error as string }));
       }
+      setIsLoading(false);
     }
-    setIsLoading(false);
   };
   if (session.status === "loading") {
     return (
       <section className="bg-base-100 flex items-center justify-center h-screen">
-        <Loading />;
+        <Loading />
       </section>
     );
   }
@@ -78,88 +79,72 @@ const Login = () => {
   return (
     <section className="hero h-screen overflow-y-scroll bg-base-200">
       <Toaster />
-      <div className="flex flex-col gap-5 lg:flex-row-reverse">
-        <form
-          onSubmit={handleSubmit}
-          className="card flex-shrink-0  order-last  w-full max-w-sm shadow-2xl bg-base-100"
-        >
-          <div className="card-body">
-            {errors?.response && (
+      <form
+        onSubmit={handleSubmit}
+        className="card flex-shrink-0  order-last  w-full max-w-sm shadow-2xl bg-base-100"
+      >
+        <div className="card-body">
+          <h1 className="text-5xl font-bold">Login</h1>
+
+          {errors?.response && (
+            <label className="label">
+              <span className="label-text text-red-500">{errors.response}</span>
+            </label>
+          )}
+          <div className="form-control">
+            <label className="label">
+              <span className="label-text">Email</span>
+            </label>
+            <input
+              onChange={handleOnChange}
+              value={formData.email}
+              name="email"
+              type="text"
+              placeholder="email"
+              className="input input-bordered"
+            />
+            {errors?.email && (
+              <label className="label">
+                <span className="label-text text-red-500">{errors.email}</span>
+              </label>
+            )}
+          </div>
+          <div className="form-control">
+            <label className="label">
+              <span className="label-text">Password</span>
+            </label>
+            <input
+              onChange={handleOnChange}
+              value={formData.plainPassword}
+              name="plainPassword"
+              type="password"
+              placeholder="password"
+              className="input input-bordered"
+            />
+            {errors?.plainPassword && (
               <label className="label">
                 <span className="label-text text-red-500">
-                  {errors.response}
+                  {errors.plainPassword}
                 </span>
               </label>
             )}
-            <div className="form-control">
-              <label className="label">
-                <span className="label-text">Email</span>
-              </label>
-              <input
-                onChange={handleOnChange}
-                value={formData.email}
-                name="email"
-                type="text"
-                placeholder="email"
-                className="input input-bordered"
-              />
-              {errors?.email && (
-                <label className="label">
-                  <span className="label-text text-red-500">
-                    {errors.email}
-                  </span>
-                </label>
-              )}
-            </div>
-            <div className="form-control">
-              <label className="label">
-                <span className="label-text">Password</span>
-              </label>
-              <input
-                onChange={handleOnChange}
-                value={formData.plainPassword}
-                name="plainPassword"
-                type="password"
-                placeholder="password"
-                className="input input-bordered"
-              />
-              {errors?.plainPassword && (
-                <label className="label">
-                  <span className="label-text text-red-500">
-                    {errors.plainPassword}
-                  </span>
-                </label>
-              )}
-              <label className="label">
-                <a href="#" className="label-text-alt link link-hover">
-                  Forgot password?
-                </a>
-              </label>
-              <label className="label">
-                <Link
-                  href="/auth/register"
-                  className="label-text-alt link link-hover underline text-blue-400"
-                >
-                  New User?
-                </Link>
-              </label>
-            </div>
-            <div className="form-control mt-6">
-              <button disabled={isLoading} className="btn btn-primary">
-                Login
-              </button>
-            </div>
+
+            <label className="label">
+              <Link
+                href="/auth/register"
+                className="label-text-alt link link-hover underline text-blue-400"
+              >
+                New User?
+              </Link>
+            </label>
           </div>
-        </form>
-        <div className="text-center lg:text-left w-96  lg:order-last">
-          <h1 className="text-5xl font-bold">Login now!</h1>
-          <p className="py-6">
-            Provident cupiditate voluptatem et in. Quaerat fugiat ut assumenda
-            excepturi exercitationem quasi. In deleniti eaque aut repudiandae et
-            a id nisi.
-          </p>
+          <div className="form-control mt-6">
+            <button disabled={isLoading} className="btn btn-primary">
+              Login
+            </button>
+          </div>
         </div>
-      </div>
+      </form>
     </section>
   );
 };

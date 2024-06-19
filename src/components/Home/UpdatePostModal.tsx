@@ -103,7 +103,6 @@ const UpdatePostModal: React.FC<Props> = ({ modalId, post, setPost }) => {
             />
             {previewImage ? (
               <button
-                disabled={true}
                 onClick={handleRemoveImage}
                 className="rounded-md btn btn-error self-end"
               >
@@ -111,7 +110,6 @@ const UpdatePostModal: React.FC<Props> = ({ modalId, post, setPost }) => {
               </button>
             ) : (
               <button
-                disabled={true}
                 onClick={handleAddImage}
                 className="rounded-md btn btn-success self-end"
               >
